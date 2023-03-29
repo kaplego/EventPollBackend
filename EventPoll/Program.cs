@@ -289,26 +289,33 @@ app.MapPost("/polls/{id}/image", [Authorize(Policy = "admin")] async (int id, Ma
 
     var formFile = request.Form.Files.FirstOrDefault();
 
-    if (formFile is null || string.IsNullOrEmpty(formFile.FileName))
+    if (formFile is null)
     {
         return Results.BadRequest();
     }
 
-    var formFileInfo = new FileInfo(formFile.FileName);
-    var mimeType = formFileInfo.Extension.ToLowerInvariant() switch
+    string extension;
+    if (!string.IsNullOrEmpty(formFile.FileName))
     {
-        ".png" => "image/png",
-        ".jpg" => "image/jpeg",
-        ".jpeg" => "image/jpeg",
-        _ => null
-    };
+        extension = new FileInfo(formFile.FileName).Extension;
+    }
+    else
+    {
+        var mimeType = formFile.ContentType.ToLowerInvariant().Split('/');
+        if (mimeType.Length != 2 || mimeType[0] != "image")
+        {
+            return Results.BadRequest();
+        }
 
-    if (mimeType != formFile.ContentType.ToLowerInvariant())
+        extension = "." + mimeType[1];
+    }
+
+    if (extension != ".png" && extension != ".jpg" && extension != ".jpeg")
     {
         return Results.BadRequest();
     }
 
-    var fileName = Guid.NewGuid().ToString() + formFileInfo.Extension;
+    var fileName = Guid.NewGuid().ToString() + extension;
 
     using (var inputStream = formFile.OpenReadStream())
     using (var outputStream = File.OpenWrite($"{env.ContentRootPath}/images/{fileName}"))
