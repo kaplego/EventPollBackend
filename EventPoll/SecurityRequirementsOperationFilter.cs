@@ -20,11 +20,11 @@ namespace EventPoll
 
             if (authorizeAttr != null)
             {
-                operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
+                operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
 
                 if (!string.IsNullOrEmpty(authorizeAttr.Policy) || !string.IsNullOrEmpty(authorizeAttr.Roles))
                 {
-                    operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
+                    operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
                 }
 
                 operation.Security = new List<OpenApiSecurityRequirement>
